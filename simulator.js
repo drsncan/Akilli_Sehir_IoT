@@ -1,13 +1,24 @@
-// Akıllı Şehir IoT Sensör Simülatörü - Gün 1
-// Bu modül sokaktaki sensörlerden gelen anlık verileri simüle eder.
+require('dotenv').config();
+const Protocol = require('azure-iot-device-mqtt').Mqtt;
+const Client = require('azure-iot-device').Client;
+const Message = require('azure-iot-device').Message;
+
+// Şifreyi .env dosyasından güvenli bir şekilde çekiyoruz
+const connectionString = process.env.DEVICE_CONNECTION_STRING;
+
+if (!connectionString) {
+    console.error("HATA: .env dosyasından bağlantı dizesi okunamadı!");
+    process.exit(1);
+}
+
+// Bağlantıyı kuruyoruz
+const client = Client.fromConnectionString(connectionString, Protocol);
 
 function generateCityData() {
-    // Rastgele sensör verileri üretimi
-    const trafficDensity = Math.floor(Math.random() * 101); // %0 - %100 arası trafik
-    const temperature = (Math.random() * (35 - 10) + 10).toFixed(1); // 10°C - 35°C arası
-    const airQualityIndex = Math.floor(Math.random() * (150 - 20) + 20); // AQI (Hava Kalitesi)
+    const trafficDensity = Math.floor(Math.random() * 101); 
+    const temperature = (Math.random() * (35 - 10) + 10).toFixed(1); 
+    const airQualityIndex = Math.floor(Math.random() * (150 - 20) + 20); 
 
-    // Eğer hava kalitesi 100'ün üzerindeyse veya trafik %80'den fazlaysa uyarı ver
     const status = (airQualityIndex > 100 || trafficDensity > 80) ? 'WARNING' : 'NORMAL';
 
     return {
@@ -23,11 +34,32 @@ function generateCityData() {
     };
 }
 
-// Her 3 saniyede bir veri üret
 console.log("🏙️ Akıllı Şehir IoT Simülatörü Başlatıldı...");
-console.log("Sensör verileri toplanıyor...\n");
+console.log("Azure IoT Hub ile MQTT bağlantısı kuruluyor...\n");
 
-setInterval(() => {
-    const data = generateCityData();
-    console.log(`[VERİ ÜRETİLDİ] Zaman: ${data.timestamp} | Trafik: %${data.metrics.trafficDensity} | Hava Kalitesi (AQI): ${data.metrics.airQualityIndex} | Durum: ${data.status}`);
-}, 3000);
+client.open((err) => {
+    if (err) {
+        console.error('Bağlantı hatası: ' + err.message);
+        return;
+    }
+    console.log('✅ Azure IoT Hub Bağlantısı Başarılı!');
+
+    setInterval(() => {
+        const data = generateCityData();
+        const message = new Message(JSON.stringify(data));
+        
+        if (data.status === 'WARNING') {
+            message.properties.add('alert', 'true');
+        }
+
+        console.log(`[VERİ ÜRETİLDİ] Zaman: ${data.timestamp} | Trafik: %${data.metrics.trafficDensity} | AQI: ${data.metrics.airQualityIndex} | Durum: ${data.status}`);
+        
+        client.sendEvent(message, (err) => {
+            if (err) {
+                console.error('Gönderim hatası: ' + err.toString());
+            } else {
+                console.log('   ☁️ -> Buluta iletildi!');
+            }
+        });
+    }, 3000);
+});
