@@ -15,3 +15,8 @@ Bu proje, 3522 Bulut Bilişim dersi kapsamında geliştirilmiş bir IoT (Nesnele
 * `SENSOR-KIZILAY-01` ID'si ile bulut üzerinde sanal bir cihaz kaydı yapıldı.
 * Node.js uygulamasına `azure-iot-device` ve `azure-iot-device-mqtt` SDK'ları entegre edildi.
 * Üretilen verilerin `.env` kullanılarak güvenli bir şekilde ve gerçek zamanlı olarak Azure IoT Hub'a MQTT protokolü üzerinden akışı sağlandı.
+
+### 3. Gün: Veri İşleme (Consumer) ve Cosmos DB Entegrasyonu
+* Azure Cosmos DB üzerinde MongoDB API kullanılarak Serverless bir veritabanı ayağa kaldırıldı.
+* IoT Hub üzerindeki yerleşik uç nokta dinlenerek anlık sensör verileri Node.js uygulamasına çekildi.
+* Gelen veriler üzerinde anlık analiz yapıldı. "WARNING" etiketi taşıyan veriler (yüksek trafik veya kötü hava kalitesi) kalıcı olarak Cosmos DB'ye kaydedildi.
