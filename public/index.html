@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akıllı Şehir Canlı Dashboard</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { 
+            background-color: #1e1e1e; 
+            color: white; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            text-align: center; 
+            margin: 0; 
+            padding: 3vh 20px; /* Üstten ve alttan dinamik boşluk */
+            box-sizing: border-box;
+            height: 100vh; /* Sayfa yüksekliğini tam ekran yap */
+            overflow: hidden; /* Kaydırma çubuğunu tamamen gizle */
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #2d2d2d;
+            border-radius: 15px;
+            padding: 20px 30px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+            height: 90vh; /* Konteyner ekranın %90'ını kaplasın */
+            display: flex;
+            flex-direction: column; /* İçeriği dikey olarak sırala */
+        }
+        h1 { color: #4CAF50; margin: 10px 0 5px 0; font-size: 24px; }
+        p { color: #aaaaaa; margin-bottom: 20px; font-size: 14px; }
+        .chart-wrapper {
+            position: relative;
+            flex-grow: 1; /* Grafik kutusu kalan tüm boşluğu otomatik doldursun */
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏙️ Kızılay Meydanı - Canlı Sensör Verileri</h1>
+        <p>Trafik Yoğunluğu ve Hava Kalitesi (AQI) Anlık İzleme Ekranı</p>
+        
+        <div class="chart-wrapper">
+            <canvas id="liveChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const socket = io(); 
+        const ctx = document.getElementById('liveChart').getContext('2d');
+
+        const liveChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [], 
+                datasets: [
+                    {
+                        label: 'Trafik Yoğunluğu (%)',
+                        borderColor: '#ff6384',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        data: [],
+                        tension: 0.4, 
+                        fill: true
+                    },
+                    {
+                        label: 'Hava Kalitesi (AQI)',
+                        borderColor: '#36a2eb',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        data: [],
+                        tension: 0.4,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Kapsayıcı div'in boyutlarına uyum sağlaması için şart
+                scales: {
+                    x: { ticks: { color: '#ccc' }, grid: { color: '#444' } },
+                    y: { min: 0, max: 150, ticks: { color: '#ccc' }, grid: { color: '#444' } }
+                },
+                plugins: { legend: { labels: { color: '#fff' } } },
+                animation: { duration: 400 }
+            }
+        });
+
+        socket.on('sensorData', (data) => {
+            const timeStr = new Date(data.timestamp).toLocaleTimeString('tr-TR');
+
+            liveChart.data.labels.push(timeStr);
+            liveChart.data.datasets[0].data.push(data.metrics.trafficDensity);
+            liveChart.data.datasets[1].data.push(data.metrics.airQualityIndex);
+
+            if (liveChart.data.labels.length > 15) {
+                liveChart.data.labels.shift();
+                liveChart.data.datasets[0].data.shift();
+                liveChart.data.datasets[1].data.shift();
+            }
+
+            liveChart.update(); 
+        });
+    </script>
+</body>
+</html>

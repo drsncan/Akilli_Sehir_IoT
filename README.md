@@ -20,3 +20,8 @@ Bu proje, 3522 Bulut Bilişim dersi kapsamında geliştirilmiş bir IoT (Nesnele
 * Azure Cosmos DB üzerinde MongoDB API kullanılarak Serverless bir veritabanı ayağa kaldırıldı.
 * IoT Hub üzerindeki yerleşik uç nokta dinlenerek anlık sensör verileri Node.js uygulamasına çekildi.
 * Gelen veriler üzerinde anlık analiz yapıldı. "WARNING" etiketi taşıyan veriler (yüksek trafik veya kötü hava kalitesi) kalıcı olarak Cosmos DB'ye kaydedildi.
+
+### 4. Gün: Canlı Görselleştirme (Real-Time Dashboard)
+* Node.js üzerinde Express.js ve Socket.io kullanılarak gerçek zamanlı bir web sunucusu ayağa kaldırıldı.
+* Azure üzerinden akan anlık veriler, WebSocket protokolü kullanılarak çift yönlü iletişimle doğrudan web tarayıcısına aktarıldı.
+* Frontend tarafında HTML5, CSS3 ve Chart.js kullanılarak sensör verilerinin saniyelik olarak izlenebildiği şık ve duyarlı (responsive) bir canlı grafik ekranı tasarlandı.
